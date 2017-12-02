@@ -5,10 +5,11 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 
+CRIPROXY_DEB_URL="${CRIPROXY_DEB_URL:-https://github.com/Mirantis/criproxy/releases/download/v0.9.2/criproxy-nodeps_0.9.2_amd64.deb}"
 NONINTERACTIVE="${NONINTERACTIVE:-}"
 NO_VM_CONSOLE="${NO_VM_CONSOLE:-}"
 INJECT_LOCAL_IMAGE="${INJECT_LOCAL_IMAGE:-}"
-dind_script="dind-cluster-v1.7.sh"
+dind_script="dind-cluster-v1.8.sh"
 kubectl="${HOME}/.kubeadm-dind-cluster/kubectl"
 BASE_LOCATION="${BASE_LOCATION:-https://raw.githubusercontent.com/Mirantis/virtlet/master/}"
 RELEASE_LOCATION="${RELEASE_LOCATION:-https://github.com/Mirantis/virtlet/releases/download/}"
@@ -111,10 +112,15 @@ function demo::start-dind-cluster {
   if [[ ! ${NONINTERACTIVE} ]]; then
     echo "Cirros ssh connection will be open after Virtlet setup is complete, press Ctrl-D to disconnect." >&2
   fi
-  echo "To clean up the cluster, use './dind-cluster-v1.7.sh clean'" >&2
+  echo "To clean up the cluster, use './dind-cluster-v1.8.sh clean'" >&2
   demo::ask-before-continuing
   "./${dind_script}" clean
   "./${dind_script}" up
+}
+
+function demo::install-cri-proxy {
+  demo::step "Installing CRI proxy package on ${virtlet_node} container"
+  docker exec "${virtlet_node}" /bin/bash -c "curl -sSL '${CRIPROXY_DEB_URL}' >/criproxy.deb && dpkg -i /criproxy.deb && rm /criproxy.deb"
 }
 
 function demo::inject-local-image {
@@ -323,12 +329,6 @@ function demo::start-nginx {
   "${kubectl}" run nginx --image=nginx --expose --port 80
 }
 
-function demo::start-image-server {
-  demo::step "Starting Image Server"
-  "${kubectl}" create -f "${BASE_LOCATION}/examples/image-server.yaml" -f "${BASE_LOCATION}/examples/image-service.yaml"
-  demo::wait-for "Image Service" demo::service-ready image-service
-}
-
 function demo::start-vm {
   demo::step "Starting sample CirrOS VM"
   "${kubectl}" create -f "${BASE_LOCATION}/examples/cirros-vm.yaml"
@@ -349,7 +349,7 @@ can be used to disconnect from it.
 Use 'curl http://nginx.default.svc.cluster.local' from VM console to test
 cluster networking.
 
-To clean up the cluster, use './dind-cluster-v1.7.sh clean'
+To clean up the cluster, use './dind-cluster-v1.8.sh clean'
 [1] https://github.com/Mirantis/virtlet
 [2] https://github.com/Mirantis/kubeadm-dind-cluster
 EOF
@@ -358,11 +358,11 @@ fi
 
 demo::get-dind-cluster
 demo::start-dind-cluster
+demo::install-cri-proxy
 if [[ ${INJECT_LOCAL_IMAGE:-} ]]; then
   demo::inject-local-image
 fi
 demo::label-and-untaint-node
 demo::start-virtlet
 demo::start-nginx
-demo::start-image-server
 demo::start-vm

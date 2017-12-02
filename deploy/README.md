@@ -10,11 +10,11 @@ The steps described here are performed automatically by
 [demo.sh](demo.sh) script.
 
 1. Start [kubeadm-dind-cluster](https://github.com/Mirants/kubeadm-dind-cluster)
-   with Kubernetes version 1.7 (you're not required to download it to your home directory):
+   with Kubernetes version 1.8 (you're not required to download it to your home directory):
 ```
-$ wget -O ~/dind-cluster-v1.7.sh https://cdn.rawgit.com/Mirantis/kubeadm-dind-cluster/master/fixed/dind-cluster-v1.7.sh
-$ chmod +x ~/dind-cluster-v1.7.sh
-$ ~/dind-cluster-v1.7.sh up
+$ wget -O ~/dind-cluster-v1.8.sh https://cdn.rawgit.com/Mirantis/kubeadm-dind-cluster/master/fixed/dind-cluster-v1.7.sh
+$ chmod +x ~/dind-cluster-v1.8.sh
+$ ~/dind-cluster-v1.8.sh up
 $ export PATH="$HOME/.kubeadm-dind-cluster:$PATH"
 ```
    The cluster script stores appropriate kubectl version in `~/.kubeadm-dind-cluster`.
@@ -32,6 +32,19 @@ kubectl get pods -w -n kube-system
 ```
 5. Go to `examples/` directory and follow [the instructions](../examples/README.md) from there.
 
+## Configuring Virtlet
+
+Virtlet can be customized through the `virtlet-config` ConfigMap Kuberenetes object.
+The following keys in the config map are honored by the `virtlet-ds.yaml`:
+
+  * `disable_kvm` - disables KVM support and forces QEMU instead. Use "1" as a value.
+  * `download_protocol` - default image download protocol - either `http` or `https`. The default is https.
+  * `loglevel` - integer log level value for the virtlet written as a string (e.g. "3", "2", "1").
+  * `calico-subnet` - netmask width for the Calico CNI. Default is "24".
+  * `image_regexp_translation` - enables regexp syntax for the image name translation rules.
+  * `disable_logging` - disables log streaming from VMs. Use "1" to disable.
+
+
 ## Removing Virtlet
 
 In order to remove Virtlet, first you need to delete all the VM pods.
@@ -41,58 +54,7 @@ You can remove Virtlet DaemonSet with the following command:
 kubectl delete daemonset -R -n kube-system virtlet
 ```
 
-To undo the changes made by CRI proxy bootstrap, first remove the
-configmaps for the nodes that run Virtlet, e.g. for node named
-`kube-node-1` this is done using the following command:
-```
-kubectl delete configmap -n kube-system kubelet-kube-node-1
-```
-
-Then restart kubelet on the nodes, remove criproxy containers and the
-saved kubelet config:
-```
-systemctl restart kubelet
-docker rm -fv $(docker ps -qf label=criproxy=true)
-rm /etc/criproxy/kubelet.conf
-```
-
-## Increasing CRI proxy verbosity level after the bootstrap
-
-You can use the following command to restart CRI proxy in a more
-verbose mode:
-
-```bash
-docker rm -f $(docker ps -q --filter=label=criproxy=true)
-docker run -d --privileged \
-      -l criproxy=true \
-      --restart always \
-       --log-opt max-size=100m \
-       --name criproxy \
-       --net=host \
-       --pid=host \
-       --uts=host \
-       --userns=host \
-       mirantis/virtlet \
-       nsenter --mount=/proc/1/ns/mnt -- \
-       /opt/criproxy/bin/criproxy \
-       -v 3 -alsologtostderr \
-       -connect docker,virtlet:/run/virtlet.sock
-```
-
-`-v` option of `criproxy` controls the verbosity here. 0-1 means some
-very basic logging during startup and displaying serious errors, 2 is
-the same as 1 plus logging of CRI request errors and 3 causes dumping
-of actual CRI requests and responses except for `ListPodSandbox`,
-`ListContainers` and `ListImages` requests in addition to what's
-logged on level 2. Level 4 adds dumping `List*` requests which may
-cause the log to grow fast. `--log-opt` docker option controls the
-maximum size of the docker log for CRI proxy container.
-
-## Concerns about restarting Virtlet on a node
-
-If virtlet pod restarts on a node when some VM pods are active on it,
-these VM pods will enter `ContainerCreating` state and remain in it
-for a period of up to several minutes before going back to `Running`
-state. You may restart CRI proxy on the node to make the VM pods
-return to `Running` state immediately. This issue is to be fixed
-later.
+After that you can remove CRI Proxy if you're not going to use the
+node for Virtlet again by undoing the steps you made to install it
+(see CRI Proxy
+[documentation](https://github.com/Mirantis/criproxy/)).

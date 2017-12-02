@@ -23,7 +23,7 @@ import:
 - package: github.com/libvirt/libvirt-go
   version: c3209e4ba8b8dda65c85ca0ac04302e55895caf7
 - package: github.com/libvirt/libvirt-go-xml
-  version: 118d8d613790f565eacbd8184359fb4968471c0f
+  version: b80a3ac43b6d354cd28dbf86de016639c0e5cd87
 - package: k8s.io/kubernetes
   version: v1.7.0
 - package: k8s.io/apiserver
@@ -33,9 +33,9 @@ import:
 - package: github.com/jonboulle/clockwork
   version: bcac9884e7502bb2b474c0339d889cb981a2f27f
 - package: github.com/onsi/ginkgo
-- package: github.com/onsi/gomega
 - package: k8s.io/apiextensions-apiserver
   version: fcd622fe88a4a6efcb5aea9e94ee87324ac1b036
+- package: github.com/onsi/gomega
 - package: k8s.io/metrics
   version: 8efbc8e22d00b9c600afec5f1c14073fd2412fce
 - package: k8s.io/api

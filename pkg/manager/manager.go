@@ -202,7 +202,7 @@ func (v *VirtletManager) RunPodSandbox(ctx context.Context, in *kubeapi.RunPodSa
 		}
 	}
 	fdPayload := &tapmanager.GetFDPayload{Description: pnd}
-	netConfigBytes, err := v.fdManager.AddFD(podId, fdPayload)
+	netConfigBytes, err := v.fdManager.AddFDs(podId, fdPayload)
 	if err != nil {
 		// this will cause kubelet to delete the pod sandbox and then retry
 		// its creation
@@ -272,7 +272,7 @@ func (v *VirtletManager) StopPodSandbox(ctx context.Context, in *kubeapi.StopPod
 			return nil, err
 		}
 
-		if err := v.fdManager.ReleaseFD(in.PodSandboxId); err != nil {
+		if err := v.fdManager.ReleaseFDs(in.PodSandboxId); err != nil {
 			glog.Errorf("Error releasing tap fd for the pod %q: %v", in.PodSandboxId, err)
 		}
 	}
@@ -388,7 +388,7 @@ func (v *VirtletManager) CreateContainer(ctx context.Context, in *kubeapi.Create
 	}
 
 	fdKey := podSandboxId
-	vmConfig, err := libvirttools.GetVMConfig(in)
+	vmConfig, err := libvirttools.GetVMConfig(in, sandboxInfo.CNIConfig)
 	if err != nil {
 		glog.Errorf("Error getting vm config for container %s: %v", name, err)
 		return nil, err
@@ -429,7 +429,7 @@ func (v *VirtletManager) StopContainer(ctx context.Context, in *kubeapi.StopCont
 		return nil, err
 	}
 	response := &kubeapi.StopContainerResponse{}
-	glog.V(2).Info("Sending stop response for containerID: %s", in.ContainerId)
+	glog.V(2).Infof("Sending stop response for containerID: %s", in.ContainerId)
 	return response, nil
 }
 
