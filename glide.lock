@@ -1,5 +1,5 @@
-hash: 4e765136ebbc14a15220dd6fc26843f816985a7c41c1fe1f5f038ab9084e3add
-updated: 2017-10-25T17:16:40.573474515+01:00
+hash: b78c93c84dbc5821460c990382bfc4759deb237af58467210670a05cf3a4742e
+updated: 2017-11-01T14:14:03.634918667Z
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -474,6 +474,13 @@ imports:
   - proxy
   - trace
   - websocket
+- name: golang.org/x/oauth2
+  version: a6bd8cefa1811bd24b86f8902872e4e8225f74c4
+  subpackages:
+  - google
+  - internal
+  - jws
+  - jwt
 - name: golang.org/x/sync
   version: 8e0aa688b654ef28caa72506fa5ec8dba9fc7690
   subpackages:
@@ -496,6 +503,25 @@ imports:
   - unicode/bidi
   - unicode/norm
   - width
+- name: google.golang.org/api
+  version: e3824ed33c72bf7e81da0286772c34b987520914
+  subpackages:
+  - compute/v1
+  - gensupport
+  - googleapi
+  - googleapi/internal/uritemplates
+- name: google.golang.org/appengine
+  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
+  subpackages:
+  - internal
+  - internal/app_identity
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/modules
+  - internal/remote_api
+  - internal/urlfetch
+  - urlfetch
 - name: google.golang.org/grpc
   version: 777daa17ff9b5daef1cfdf915088a2ada3332bf0
   subpackages:
@@ -507,6 +533,8 @@ imports:
   - naming
   - peer
   - transport
+- name: gopkg.in/freddierice/go-losetup.v1
+  version: fc9adea44124401d8bfef3a97eaf61b5d44cc2c6
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2

@@ -28,7 +28,6 @@ import:
   version: v1.7.0
 - package: k8s.io/apiserver
   version: b6348e73bd115a31b70a4e9ff12d35869d057d8c
-  //version: b74e5942e2a7ef9f73874b7e5a48c030ff7f1189
 - package: k8s.io/client-go
   version: 4cbb4d746a6a36cf99d6cd4f1b69a6907f49318a
 - package: github.com/jonboulle/clockwork
@@ -44,3 +43,8 @@ import:
 - package: golang.org/x/sync
   subpackages:
   - syncmap
+- package: google.golang.org/api
+- package: golang.org/x/oauth2
+  subpackages:
+  - google
+- package: gopkg.in/freddierice/go-losetup.v1
